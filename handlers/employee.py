@@ -3,10 +3,8 @@ from handlers.daba_base import get_connection
 
 # Relacionado a la Entidad Empleado
 
-def new_employee(name: str, address: str, email: str, job: str) -> None:
+def new_employee(name: str, password: str, address: str, email: str, job: str) -> bool:
     digital_tech = get_connection()
-    password = email
-    password = hashlib.md5(password.encode()).hexdigest()
     
     with digital_tech.cursor() as cursor:
         cursor.execute("INSERT INTO Empleado(Nombre, Contrasena, Direccion, Correo_Electronico, Cargo) VALUES (%s, %s, %s, %s, %s)", (name, password, address, email, job))
@@ -25,11 +23,11 @@ def get_employee(id: int) -> tuple:
     digital_tech.close()
     return employee
 
-def update_employee(id: str, name: str, address: str, email: str, job: str):
+def update_employee(id: str, name: str, password: str, address: str, email: str, job: str):
     digital_tech = get_connection()
     
     with digital_tech.cursor() as cursor:
-        cursor.execute(f"UPDATE Empleado SET Nombre = '{name}', Direccion = '{address}', Correo_Electronico = '{email}', Cargo = '{job}' WHERE ID = '{id}'")
+        cursor.execute(f"UPDATE Empleado SET Nombre = '{name}', Contrasena = '{password}', Direccion = '{address}', Correo_Electronico = '{email}', Cargo = '{job}' WHERE ID = '{id}'")
 
     digital_tech.commit()
     digital_tech.close()

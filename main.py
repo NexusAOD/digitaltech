@@ -30,13 +30,19 @@ def register_post():
     cellphone = request.form['phone']
     address = request.form['address']
     password = request.form['password']
+    cpassword = request.form['confirm_password']
+
+    if password != cpassword:
+        flash('La contraseñas no coinciden', 'error')
+        return redirect('/register')
 
     password = hashlib.md5(password.encode()).hexdigest()
 
     if not new_user(name, email, cellphone, address, password):
-        flash('Ha ocurrido un error')
+        flash('Ha ocurrido un error', 'error')
         return redirect('/register')
 
+    flash('Registro exitoso', 'success')
     return redirect('/login')
 
 # Ruta para la página de logeo
@@ -207,21 +213,28 @@ def accept_returns(id, id_product, quantity):
 # Rutas de CRUD de Productos
 @app.route('/crud_products')
 def crud_products():
-    return render_template('crud_products.html', products = [])
+    prod = get_products()
+    return render_template('crud_products.html', products = prod)
 
-@app.route('/crud_products', methods=['POST'])
+
+@app.route('/add_product', methods=['POST', 'GET'])
 def add_product():
-    name = request.form['nombre']
-    brand = request.form['marca']
-    category = request.form['categoria']
-    status = request.form['estatus']
-    description = request.form['descripcion']
-    image = request.form['imagen']
-    price = request.form['precio']
 
-    new_product(name, brand, category, status, description, image, price)
+    if request.method == 'GET':
+        return render_template('add_product.html')
+    
+    elif request.method == 'POST':
+        name = request.form['nombre']
+        brand = request.form['marca']
+        category = request.form['categoria']
+        status = request.form['estatus']
+        description = request.form['descripcion']
+        image = request.form['imagen']
+        price = request.form['precio']
 
-    return render_template('crud_products.html', products = [])
+        new_product(name, brand, category, status, description, image, price)
+
+        return redirect(url_for('add_product'))
 
 @app.route('/search_products', methods=['POST'])
 def search_products():
@@ -312,18 +325,28 @@ def remove_products(id):
 # Rutas de CRUD de Empleados
 @app.route('/crud_employees')
 def crud_employees():
-    return render_template('crud_employees.html', employees = [])
+    employees = get_employees()
+    return render_template('crud_employees.html', employees = employees)
 
-@app.route('/crud_employees', methods = ['POST'])
+
+@app.route('/add_employee', methods = ['POST', 'GET'])
 def add_employee():
-    name = request.form['nombre']
-    address = request.form['direccion']
-    email = request.form['correo']
-    job = request.form['option']
 
-    new_employee(name, address, email, job)
+    if request.method == 'GET':
+        return render_template('add_employee.html')
 
-    return render_template('crud_employees.html', employees = [])
+    elif request.method == 'POST':   
+        name = request.form['nombre']
+        password = request.form['contraseña']
+        address = request.form['direccion']
+        email = request.form['correo']
+        job = request.form['option']
+
+        password = hashlib.md5(password.encode()).hexdigest()  
+
+        new_employee(name, password, address, email, job)
+
+        return redirect(url_for('add_employee'))
 
 @app.route('/search_employees', methods=['POST'])
 def search_employees():
@@ -352,34 +375,47 @@ def update_employees():
 
     identifier = request.form['id']
     name = request.form['nombre']
+    password = request.form['contraseña']
     address = request.form['direccion']
     email = request.form['correo']
     job = request.form['cargo']
     
-    update_employee(identifier, name, address, email, job)
+    password = hashlib.md5(password.encode()).hexdigest()
+    
+    update_employee(identifier, name, password, address, email, job)
 
     return redirect(url_for('crud_employees'))
 
 @app.route('/remove_employee/<int:id>')
 def remove_employees(id):
+    print(f"Intentando eliminar el empleado con ID {id}")  # Verifica que el ID llega bien
     remove_employee(id)
     return redirect(url_for('crud_employees'))
 
 # Rutas de CRUD de Proveedores
 @app.route('/crud_suppliers')
 def crud_suppliers():
-    return render_template('crud_suppliers.html', suppliers = [])
+    supp = get_suppliers()
+    return render_template('crud_suppliers.html', suppliers = supp)
 
-@app.route('/crud_suppliers', methods=['POST'])
+
+
+@app.route('/add_supplier', methods=['POST', 'GET'])
 def add_supplier():
-    name = request.form['nombre']
-    address = request.form['direccion']
-    rfc = request.form['rfc']
-    phone = request.form['telefono']
 
-    new_supplier(name, address, rfc, phone)
+    if request.method == 'GET':
+        return render_template('add_supplier.html')
 
-    return render_template('crud_suppliers.html', suppliers = [])
+    elif request.method == 'POST':
+        name = request.form['nombre']
+        address = request.form['direccion']
+        rfc = request.form['rfc']
+        phone = request.form['telefono']
+
+        new_supplier(name, address, rfc, phone)
+
+        return render_template('add_supplier', suppliers = [])
+
 
 @app.route('/search_suppliers', methods=['POST'])
 def search_suppliers():
